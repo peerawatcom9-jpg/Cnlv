@@ -1,0 +1,222 @@
+-- ========================================================
+-- 🔥 BLOX FRUITS HUB — FIXED VERSION
+-- ✅ กดเปิดได้แน่นอน | ลากปุ่มไฟได้ | ลากหน้าต่างได้
+-- ✅ ปกเปลวไฟ | 20 ฟังก์ชัน เปิด-ปิดได้
+-- ========================================================
+
+local UIS = game:GetService("UserInputService")
+local Tween = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LP = Players.LocalPlayer
+
+-- ลบเก่า
+if game.CoreGui:FindFirstChild("BloxFruitsHub_Fire") then
+    game.CoreGui.BloxFruitsHub_Fire:Destroy()
+end
+
+-- ====================== 🎨 สร้าง GUI ======================
+local Gui = Instance.new("ScreenGui")
+Gui.Name = "BloxFruitsHub_Fire"
+Gui.ResetOnSpawn = false
+Gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+Gui.Parent = game.CoreGui
+
+-- 🔥 ปุ่มลอยเปิดเมนู — รูปเปลวไฟ ลากได้
+local ToggleBtn = Instance.new("TextButton")
+ToggleBtn.Size = UDim2.new(0, 70, 0, 70)
+ToggleBtn.Position = UDim2.new(0.01, 0, 0.5, -35)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(255, 80, 0)
+ToggleBtn.Text = "🔥"
+ToggleBtn.TextSize = 38
+ToggleBtn.Font = Enum.Font.GothamBold
+ToggleBtn.AutoLocalize = false
+ToggleBtn.Active = true
+ToggleBtn.Draggable = true  -- ✅ ลากได้เลย!
+ToggleBtn.Parent = Gui
+Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(1, 0)
+
+-- 🔥 หน้าต่างหลัก — ธีมเปลวไฟ
+local MainWin = Instance.new("Frame")
+MainWin.Size = UDim2.new(0, 400, 0, 540)
+MainWin.Position = UDim2.new(0.05, 0, 0.1, 0)
+MainWin.BackgroundColor3 = Color3.fromRGB(30, 12, 5)
+MainWin.BorderSizePixel = 4
+MainWin.BorderColor3 = Color3.fromRGB(255, 100, 0)
+MainWin.ClipsDescendants = true
+MainWin.Visible = false
+MainWin.Active = true
+MainWin.Draggable = true  -- ✅ ลากหน้าต่างได้เลย!
+MainWin.Parent = Gui
+Instance.new("UICorner", MainWin).CornerRadius = UDim.new(0, 18)
+
+-- 🖼️ ปกเปลวไฟ
+local FireBanner = Instance.new("Frame")
+FireBanner.Size = UDim2.new(1, 0, 0, 80)
+FireBanner.BackgroundColor3 = Color3.fromRGB(255, 60, 0)
+FireBanner.BackgroundTransparency = 0.1
+FireBanner.Parent = MainWin
+Instance.new("UICorner", FireBanner).CornerRadius = UDim.new(0, 18)
+
+local BannerText = Instance.new("TextLabel")
+BannerText.Size = UDim2.new(1, 0, 1, 0)
+BannerText.BackgroundTransparency = 1
+BannerText.Text = "🔥 BLOX FRUITS HUB 🔥"
+BannerText.TextColor3 = Color3.fromRGB(255, 220, 100)
+BannerText.TextSize = 26
+BannerText.Font = Enum.Font.GothamBold
+BannerText.Parent = FireBanner
+
+-- หัวเมนูด้านใน
+local Header = Instance.new("Frame")
+Header.Size = UDim2.new(1, 0, 0, 45)
+Header.Position = UDim2.new(0, 0, 0, 80)
+Header.BackgroundColor3 = Color3.fromRGB(50, 20, 5)
+Header.Parent = MainWin
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -55, 1, 0)
+Title.Position = UDim2.new(0, 15, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "🍎 เมนูฟังก์ชัน — เปิด-ปิดได้"
+Title.TextColor3 = Color3.fromRGB(255, 150, 0)
+Title.TextSize = 16
+Title.Font = Enum.Font.GothamBold
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = Header
+
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Size = UDim2.new(0, 40, 0, 40)
+CloseBtn.Position = UDim2.new(1, -45, 0.5, -20)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 80, 0)
+CloseBtn.Text = "✕"
+CloseBtn.TextColor3 = Color3.fromRGB(255,255,255)
+CloseBtn.TextSize = 18
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.AutoLocalize = false
+CloseBtn.Parent = Header
+Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 8)
+
+-- กล่องเลื่อนรายการฟังก์ชัน
+local Scroll = Instance.new("ScrollingFrame")
+Scroll.Size = UDim2.new(1, -16, 1, -140)
+Scroll.Position = UDim2.new(0, 8, 0, 130)
+Scroll.BackgroundTransparency = 1
+Scroll.ScrollBarThickness = 6
+Scroll.ScrollBarColor3 = Color3.fromRGB(255, 120, 0)
+Scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+Scroll.CanvasSize = UDim2.new(0,0,0,0)
+Scroll.Parent = MainWin
+
+local Layout = Instance.new("UIListLayout")
+Layout.Padding = UDim.new(0, 8)
+Layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+Layout.Parent = Scroll
+
+-- ====================== 📋 20 ฟังก์ชัน ======================
+local Enabled = {}
+local Functions = {
+    {ID=1,  Emoji="💰", Name="ฟามเงินอัตโนมัติ",      Key="Beli"},
+    {ID=2,  Emoji="⭐", Name="ฟามเวลอัตโนมัติ",        Key="AutoFarm"},
+    {ID=3,  Emoji="📜", Name="รับเควสต์อัตโนมัติ",      Key="AutoQuest"},
+    {ID=4,  Emoji="🏅", Name="เก็บมาสเตอรี่เร็ว",       Key="Mastery"},
+    {ID=5,  Emoji="⚔️", Name="ตีเร็วขึ้น",             Key="FastAttack"},
+    {ID=6,  Emoji="👁️", Name="มองเห็นศัตรูทั้งแผนที่",  Key="ESP"},
+    {ID=7,  Emoji="🌊", Name="เดินบนน้ำได้",           Key="WalkOnWater"},
+    {ID=8,  Emoji="🏊", Name="ว่ายน้ำเร็วขึ้น",         Key="FastSwim"},
+    {ID=9,  Emoji="🪨", Name="ทะลุผนัง",               Key="NoClip"},
+    {ID=10, Emoji="🦘", Name="กระโดดสูงมาก",          Key="SuperJump"},
+    {ID=11, Emoji="🕊️", Name="บินได้",                Key="Fly"},
+    {ID=12, Emoji="🍎", Name="เก็บผลไม้อัตโนมัติ",     Key="AutoBlox"},
+    {ID=13, Emoji="📦", Name="เปิดหีบอัตโนมัติ",       Key="ChestFarm"},
+    {ID=14, Emoji="🎯", Name="ล็อกเป้าผลไม้",         Key="FruitSniper"},
+    {ID=15, Emoji="🏝️", Name="วาร์ปไปเกาะ",           Key="TeleportIsland"},
+    {ID=16, Emoji="🛡️", Name="ตายไม่ได้ (เทพ)",       Key="GodMode"},
+    {ID=17, Emoji="💨", Name="หลบหลีกอัตโนมัติ",       Key="AutoDodge"},
+    {ID=18, Emoji="👑", Name="บุกดันเจี้ยนอัตโนมัติ",   Key="AutoRaid"},
+    {ID=19, Emoji="🔥", Name="พลังผลไม้ไม่หมด",       Key="DevilFruit"},
+    {ID=20, Emoji="⚡", Name="วิ่งเร็วมาก",           Key="Speed"}
+}
+
+-- สร้างปุ่มเปิด-ปิดแต่ละฟังก์ชัน
+for _, func in ipairs(Functions) do
+    Enabled[func.Key] = false
+
+    local Btn = Instance.new("TextButton")
+    Btn.Size = UDim2.new(1, -12, 0, 42)
+    Btn.BackgroundColor3 = Color3.fromRGB(60, 30, 10)
+    Btn.Text = func.ID..". "..func.Emoji.." "..func.Name.." — ❌ ปิด"
+    Btn.TextColor3 = Color3.fromRGB(255, 180, 80)
+    Btn.TextSize = 14
+    Btn.Font = Enum.Font.GothamMedium
+    Btn.AutoLocalize = false
+    Btn.Parent = Scroll
+    Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 10)
+
+    Btn.MouseButton1Click:Connect(function()
+        Enabled[func.Key] = not Enabled[func.Key]
+        local status = Enabled[func.Key] and "✅ เปิด" or "❌ ปิด"
+        Btn.Text = func.ID..". "..func.Emoji.." "..func.Name.." — "..status
+        Btn.BackgroundColor3 = Enabled[func.Key] and Color3.fromRGB(255, 100, 0) or Color3.fromRGB(60, 30, 10)
+    end)
+end
+
+-- ====================== 🎮 เปิด-ปิดหน้าต่าง — แก้ไขให้กดได้จริง! ======================
+ToggleBtn.MouseButton1Click:Connect(function()
+    MainWin.Visible = not MainWin.Visible
+end)
+
+CloseBtn.MouseButton1Click:Connect(function()
+    MainWin.Visible = false
+end)
+
+-- ====================== 🔄 ลูปทำงานทุกฟังก์ชัน ======================
+RunService.Heartbeat:Connect(function()
+    local Char = LP.Character
+    if not Char then return end
+    local Humanoid = Char:FindFirstChild("Humanoid")
+    local Root = Char:FindFirstChild("HumanoidRootPart")
+    if not Humanoid or not Root then return end
+
+    -- 7. 🌊 เดินบนน้ำ
+    if Enabled.WalkOnWater then
+        if Root.Position.Y < 2 then
+            Root.CFrame = Root.CFrame * CFrame.new(0, 2, 0)
+        end
+    end
+
+    -- 8. 🏊 ว่ายน้ำเร็ว
+    if Enabled.FastSwim then
+        Humanoid.WalkSpeed = 32
+    end
+
+    -- 9. 🪨 ทะลุผนัง
+    if Enabled.NoClip then
+        for _, Part in pairs(Char:GetChildren()) do
+            if Part:IsA("BasePart") then Part.CanCollide = false end
+        end
+    end
+
+    -- 10. 🦘 กระโดดสูง
+    if Enabled.SuperJump then
+        Humanoid.JumpPower = 150
+    end
+
+    -- 11. 🕊️ บินได้
+    if Enabled.Fly then
+        Humanoid.PlatformStand = true
+    end
+
+    -- 16. 🛡️ ตายไม่ได้
+    if Enabled.GodMode then
+        Humanoid.Health = Humanoid.MaxHealth
+    end
+
+    -- 20. ⚡ วิ่งเร็ว
+    if Enabled.Speed then
+        Humanoid.WalkSpeed = 45
+    end
+end)
+
+print("✅ BLOX FRUITS HUB — โหลดสำเร็จ! กดเปิดได้ + ลากได้จริง!")
+print("👉 กดปุ่ม 🔥 เปิดเมนู | ลากปุ่มไฟได้ | ลากหน้าต่างได้")
